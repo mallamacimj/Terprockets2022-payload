@@ -88,6 +88,7 @@ const int xRawMin = 408, xRawMax = 611;
 const int yRawMin = 407, yRawMax = 610;
 const int zRawMin = 425, zRawMax = 629;
 
+bool launch = false;
 
 void setup() {
  //Set all nonused pins to high so that they act as 5v voltage sources
@@ -219,7 +220,11 @@ void loop(){
   //rtc
    DateTime now = rtc.now();
    int time[6] = {now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second()};
-  pictures(time); 
+ 
+  if(launch){
+    pictures(time);
+  }
+  
   
 
 //convert analog input to m/s^2: (x - 512) * (.05753)
@@ -256,6 +261,10 @@ void loop(){
     accel_cal = accel_cal_total/10;
   }
   */
+
+  if (accel_total > 15) {
+    launch = true;
+  }
 
   if (accel_total < accel_min) {
     accel_min = accel_total;
