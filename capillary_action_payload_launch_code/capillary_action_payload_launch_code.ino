@@ -57,9 +57,7 @@ Adafruit_BMP280 bmp; // I2C
 //Adafruit_BMP280 bmp(BMP_CS); // hardware SPI
 //Adafruit_BMP280 bmp(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
 
-File BMP_Data;
-
- File AccelDat;
+File Data;
 
 //solenoid pin
 #define solenoidPin (4)
@@ -89,6 +87,7 @@ float accel_min = 100;
 const int xRawMin = 408, xRawMax = 611;
 const int yRawMin = 407, yRawMax = 610;
 const int zRawMin = 425, zRawMax = 629;
+
 
 void setup() {
  //Set all nonused pins to high so that they act as 5v voltage sources
@@ -200,14 +199,14 @@ pinMode(2, OUTPUT);
 
  //rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-/*
-AccelDat = SD.open("AccelDat.txt", FILE_WRITE);
-AccelDat.println("------------------New Launch------------------");
-AccelDat.close();
 
-File BMP_Data = SD.open("BMP_Data.txt", FILE_WRITE);
-BMP_Data.println("------------------New Launch------------------");
-BMP_Data.close();*/
+Data = SD.open("Data", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (SD.exists("Data")) {
+    Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature,pressure,altitude,solenoid"); 
+    Data.println();
+  }
 
 digitalWrite(buzzerpin, HIGH);
 delay(2000);
@@ -262,27 +261,26 @@ void loop(){
     accel_min = accel_total;
   }
  
-  AccelDat = SD.open("AccelDat.txt", FILE_WRITE);
+  Data = SD.open("Data", FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (SD.exists("AccelDat.txt")) {
+  if (SD.exists("Data")) {
     //// Serial.print("Writing to AccelDat.txt...");
-    AccelDat.println("");
     for(unsigned int i = 0; i<6; i++){
-    AccelDat.print(time[i]);
-    AccelDat.print(",");
+    Data.print(time[i]);
+    Data.print(",");
     }
-    AccelDat.println("");
-/*    AccelDat.println("analog_x = " + String(analog_x));
-    AccelDat.println("analog_y = " + String(analog_y));
-    AccelDat.println("analog_z = " + String(analog_z)); */
-    AccelDat.println("accel_x = " + String(accel_x) + " m/s^2");
-    AccelDat.println("accel_y = " + String(accel_y) + " m/s^2");
-    AccelDat.println("accel_z = " + String(accel_z) + " m/s^2");
-    AccelDat.println("accel_total = " + String(accel_total) + " m/s^2");
-    AccelDat.println("accel_min = " + String(accel_min) + " m/s^2");
-    // close the file:
-    AccelDat.close();
+    Data.print(accel_x);
+    Data.print(",");
+    Data.print(accel_y);
+    Data.print(",");
+    Data.print(accel_z);
+    Data.print(",");
+    Data.print(accel_total);
+    Data.print(",");
+    Data.print(accel_min);
+    Data.print(",");
+    Data.close();
   } /*else {
     // if the file didn't open, print an error:
     // Serial.println(F("error opening AccelDat.txt"));
@@ -309,26 +307,23 @@ void loop(){
     delay(2000);*/
 
       //print to SD card
-    File BMP_Data = SD.open("BMP_Data.txt", FILE_WRITE);
+    File Data = SD.open("Data", FILE_WRITE);
     //// Serial.print("Writing to BMP_Data.txt...");
-    for(unsigned int i = 0; i<6; i++){
-    BMP_Data.print(time[i]);
-    BMP_Data.print(",");
-    }
-    BMP_Data.println("");
-   // BMP_Data.print(bmp.readTemperature());
-   // BMP_Data.print(",");
-    BMP_Data.print(bmp.readPressure());
-    BMP_Data.print(",");
-    BMP_Data.println(bmp.readAltitude(1013.25));
+    Data.print(bmp.readTemperature());
+    Data.print(",");
+    Data.print(bmp.readPressure());
+    Data.print(",");
+    Data.print(bmp.readAltitude(1013.25));
+    Data.print(",");
+
     //close the file
-    BMP_Data.close(); 
+    Data.close(); 
 
 
 //print to SD card solenoid status
 
-      AccelDat = SD.open("AccelDat.txt", FILE_WRITE);
-  if (SD.exists("AccelDat.txt")) {
+      Data = SD.open("Data.txt", FILE_WRITE);
+  if (SD.exists("Data.txt")) {
       //// Serial.print(F("Writing to AccelDat.txt..."));
 
 
@@ -336,14 +331,16 @@ void loop(){
    // if(/*altitude > 7000 && */ ((accel_total > -1 && accel_total < 1) || (accel_total < 10.8 && accel_total > 8.8) || (accel_total > -10.8 && accel_total < -8.8))){ 
     if((accel_total > -1) && (accel_total < 1)){
       digitalWrite(solenoidPin,HIGH);
-      AccelDat.println("solenoid is: open");
+      Data.print(1);
+      Data.println();
     }
     else {
       digitalWrite(solenoidPin,LOW);
-      AccelDat.println("solenoid is: closed");
+      Data.print(0);
+      Data.println();
     } 
    }
-   AccelDat.close();
+   Data.close();
  /*else {
     // if the file didn't open, print an error:
     // Serial.println(F("error opening AccelDat.txt"));
