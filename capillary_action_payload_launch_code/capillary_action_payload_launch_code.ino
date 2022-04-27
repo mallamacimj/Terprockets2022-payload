@@ -43,7 +43,7 @@
 
 const char sampleSize = 5;
 
-#define buzzerpin (4)
+#define buzzerpin (3)
 
 
 
@@ -75,7 +75,7 @@ ArduCAM myCAM( OV2640, CS );
 #endif
 uint8_t read_fifo_burst(ArduCAM myCAM);
 
-RTC_DS1307 rtc; 
+RTC_PCF8523 rtc; 
 
 
 //for finding accel_min
@@ -91,13 +91,6 @@ const int zRawMin = 425, zRawMax = 629;
 bool launch = false;
 
 void setup() {
- //Set all nonused pins to high so that they act as 5v voltage sources
-pinMode(3, OUTPUT);
-pinMode(8, OUTPUT);
-//pinMode(9, OUTPUT);
-digitalWrite(3, HIGH);
-digitalWrite(8, HIGH);
-//digitalWrite(9, HIGH);
 
 pinMode(buzzerpin, OUTPUT);
   
@@ -113,7 +106,7 @@ pinMode(buzzerpin, OUTPUT);
   Wire.begin();
 #endif
   Serial.begin(115200);
-  //Serial.println(F("ArduCAM Start!"));
+  Serial.println(F("ArduCAM Start!"));
   // set the CS as an output:
   pinMode(CS, OUTPUT);
   digitalWrite(CS, HIGH);
@@ -130,10 +123,10 @@ delay(100);
     temp = myCAM.read_reg(ARDUCHIP_TEST1);
     if (temp != 0x55)
     {
-      //Serial.println(F("SPI interface Error!"));
+      Serial.println(F("SPI interface Error!"));
       delay(1000); continue;
     } else {
-      //Serial.println(F("SPI interface OK.")); 
+      Serial.println(F("SPI interface OK.")); 
       break;
     }
   }
@@ -144,11 +137,11 @@ delay(100);
     myCAM.rdSensorReg8_8(OV2640_CHIPID_HIGH, &vid);
     myCAM.rdSensorReg8_8(OV2640_CHIPID_LOW, &pid);
     if ((vid != 0x26 ) && (( pid != 0x41 ) || ( pid != 0x42 ))) {
-     // Serial.println(F("ACK CMD Can't find OV2640 module!"));
+      Serial.println(F("ACK CMD Can't find OV2640 module!"));
       delay(1000); continue;
     }
     else {
-      // Serial.println(F("ACK CMD OV2640 detected.")); 
+       Serial.println(F("ACK CMD OV2640 detected.")); 
       break;
     }
   }
@@ -156,9 +149,9 @@ delay(100);
   //Initialize SD Card
   while (!SD.begin(SD_CS))
   {
-     //Serial.println(F("SD Card Error!")); delay(1000);
+     Serial.println(F("SD Card Error!")); delay(1000);
   }
-  // // Serial.println(F("SD Card detected."));
+   Serial.println(F("SD Card detected."));
   //Change to JPEG capture mode and initialize the OV5640 module
   myCAM.set_format(JPEG);
   myCAM.InitCAM();
@@ -168,9 +161,9 @@ delay(100);
 
 //temp sensor start
 unsigned status;
- //Serial.println("got here 1");
+ Serial.println("got here 1");
 status = bmp.begin();
-//// Serial.println("got here 2");
+ Serial.println("got here 2");
  /* if (!status) {
     // Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
                       "try a different address!"));
@@ -201,16 +194,17 @@ pinMode(2, OUTPUT);
  //rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
-Data = SD.open("Data", FILE_WRITE);
-
+Data = SD.open("Data.csv", FILE_WRITE);
+;
   // if the file opened okay, write to it:
-  if (SD.exists("Data")) {
+  if (SD.exists("Data.csv")) {
     Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature,pressure,altitude,solenoid"); 
     Data.println();
   }
-
+  Data.close();
+  
 digitalWrite(buzzerpin, HIGH);
-delay(2000);
+delay(200);
 digitalWrite(buzzerpin, LOW);
 
 }
@@ -220,10 +214,10 @@ void loop(){
   //rtc
    DateTime now = rtc.now();
    int time[6] = {now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second()};
- 
-  if(launch){
+   pictures(time);
+  /*if(launch){
     pictures(time);
-  }
+  }*/
   
   
 
@@ -270,13 +264,13 @@ void loop(){
     accel_min = accel_total;
   }
  
-  Data = SD.open("Data", FILE_WRITE);
+  Data = SD.open("Data.csv", FILE_WRITE);
 
   // if the file opened okay, write to it:
-  if (SD.exists("Data")) {
+  if (SD.exists("Data.csv")) {
     //// Serial.print("Writing to AccelDat.txt...");
     for(unsigned int i = 0; i<6; i++){
-    Data.print(time[i]);
+    Data.print(time[i],DEC);
     Data.print(",");
     }
     Data.print(accel_x);
@@ -316,8 +310,8 @@ void loop(){
     delay(2000);*/
 
       //print to SD card
-    File Data = SD.open("Data", FILE_WRITE);
-    //// Serial.print("Writing to BMP_Data.txt...");
+    File Data = SD.open("Data.csv", FILE_WRITE);
+    //// Serial.print("Writing to BMP_Data.csv...");
     Data.print(bmp.readTemperature());
     Data.print(",");
     Data.print(bmp.readPressure());
@@ -331,8 +325,8 @@ void loop(){
 
 //print to SD card solenoid status
 
-      Data = SD.open("Data.txt", FILE_WRITE);
-  if (SD.exists("Data.txt")) {
+      Data = SD.open("Data.csv", FILE_WRITE);
+  if (SD.exists("Data.csv")) {
       //// Serial.print(F("Writing to AccelDat.txt..."));
 
 
