@@ -217,10 +217,10 @@ void loop(){
   //rtc
    DateTime now = rtc.now();
    int time[6] = {now.year(), now.month(), now.day(), now.hour(), now.minute(), now.second()};
-   pictures(time);
-  /*if(launch){
+   //pictures(time);
+  if(launch){
     pictures(time);
-  }*/
+  }
   
   
 
@@ -258,10 +258,11 @@ void loop(){
     accel_cal = accel_cal_total/10;
   }
   */
-
-  if (accel_total > 15) {
+  if (accel_total > 15 || 1) {
     launch = true;
+    digitalWrite(ledPin, HIGH);
   }
+  
 
   if (accel_total < accel_min) {
     accel_min = accel_total;
@@ -358,8 +359,8 @@ void loop(){
 
 void pictures(DateTime x) {
   //turn light on
-  digitalWrite(ledPin, HIGH);
-  Serial.println("Led on");
+  //digitalWrite(ledPin, HIGH);
+  //Serial.println("Led on");
 
   //camera function
   myCAM.flush_fifo();
@@ -470,8 +471,8 @@ uint8_t read_fifo_burst(ArduCAM myCAM)
   myCAM.CS_HIGH();
 
   //turn LED off
-  digitalWrite(ledPin, LOW);
-  Serial.println("Led off");
+  //digitalWrite(ledPin, LOW);
+  //Serial.println("Led off");
 
   
   return 1;
