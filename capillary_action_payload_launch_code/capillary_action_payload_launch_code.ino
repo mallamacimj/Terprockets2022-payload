@@ -63,7 +63,7 @@ File Data;
 #define solenoidPin (4)
 
 //led pin
-#define ledPin (2)
+#define ledPin (8)
 
 // set pin 7 as the slave select for the digital pot:
 const char CS = 7;
@@ -207,6 +207,9 @@ digitalWrite(buzzerpin, HIGH);
 delay(200);
 digitalWrite(buzzerpin, LOW);
 
+digitalWrite(ledPin, LOW);
+//digitalWrite(ledPin, HIGH);
+//Serial.println("Led is on");
 }
 
 
@@ -356,6 +359,7 @@ void loop(){
 void pictures(DateTime x) {
   //turn light on
   digitalWrite(ledPin, HIGH);
+  Serial.println("Led on");
 
   //camera function
   myCAM.flush_fifo();
@@ -467,6 +471,7 @@ uint8_t read_fifo_burst(ArduCAM myCAM)
 
   //turn LED off
   digitalWrite(ledPin, LOW);
+  Serial.println("Led off");
 
   
   return 1;
