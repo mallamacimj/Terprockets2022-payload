@@ -203,7 +203,7 @@ Data = SD.open("Data.csv", FILE_WRITE);
 ;
   // if the file opened okay, write to it:
   if (SD.exists("Data.csv")) {
-    Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature(c),pressure(Pa),altitude(m above ground),solenoid"); 
+    Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature,pressure,altitude,solenoid"); 
     Data.println();
   }
   Data.close();
@@ -263,7 +263,7 @@ void loop(){
     accel_cal = accel_cal_total/10;
   }
   */
-  if (accel_total > 15 || 1) {
+  if (accel_total > 15) {
     launch = true;
     //digitalWrite(ledPin, HIGH);
   }
@@ -302,6 +302,7 @@ void loop(){
  //   digitalWrite(BMP_CS, HIGH);
    // long temperature = bmp.readTemperature();
     float pressure = bmp.readPressure();
+    float temperature = bmp.readTemperature();
     float altitude;
     if(n<10){
       total_pressure = total_pressure + pressure;
@@ -314,7 +315,8 @@ void loop(){
       altitude = 0;
     }
     if(n>10){
-      altitude = bmp.readAltitude(alt_pressure);
+      altitude = bmp.readAltitude(alt_pressure/100);
+      launch = true;
     }
 
     /*// Serial.print(F("Temperature = "));
@@ -354,7 +356,7 @@ void loop(){
 
 
     //Condition makes sure we are at least within 2000m of altitude and the acceleration is either close to 0, 9.8 or -9.8. need to calibrate the accelerameter to see which one occurs 
-    if(((accel_total > -1) && (accel_total < 1)) && (altitude > 1000)){
+    if((((accel_total > -1) && (accel_total < 1)) && (altitude > 500)) || temperature > 35){
       digitalWrite(solenoidPin,HIGH);
       Data.print(1);
       Data.println();
@@ -377,7 +379,7 @@ void loop(){
 
 void pictures(DateTime x) {
   //turn light on
-  //digitalWrite(ledPin, HIGH);
+  digitalWrite(ledPin, HIGH);
   //Serial.println("Led on");
 
   //camera function
@@ -489,7 +491,7 @@ uint8_t read_fifo_burst(ArduCAM myCAM)
   myCAM.CS_HIGH();
 
   //turn LED off
-  //digitalWrite(ledPin, LOW);
+  digitalWrite(ledPin, LOW);
   //Serial.println("Led off");
 
   
