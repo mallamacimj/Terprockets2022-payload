@@ -88,6 +88,11 @@ const int xRawMin = 408, xRawMax = 611;
 const int yRawMin = 407, yRawMax = 610;
 const int zRawMin = 425, zRawMax = 629;
 
+//bmp altitude
+int n = 0;
+float total_pressure;
+float alt_pressure;
+
 bool launch = false;
 
 void setup() {
@@ -198,7 +203,7 @@ Data = SD.open("Data.csv", FILE_WRITE);
 ;
   // if the file opened okay, write to it:
   if (SD.exists("Data.csv")) {
-    Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature,pressure,altitude,solenoid"); 
+    Data.print("year,month,day,hour,minute,second,accel_x,accel_y,accel_z,accel_total,accel_min,temperature(c),pressure(Pa),altitude(m above ground),solenoid"); 
     Data.println();
   }
   Data.close();
@@ -260,7 +265,7 @@ void loop(){
   */
   if (accel_total > 15 || 1) {
     launch = true;
-    digitalWrite(ledPin, HIGH);
+    //digitalWrite(ledPin, HIGH);
   }
   
 
@@ -297,7 +302,21 @@ void loop(){
  //   digitalWrite(BMP_CS, HIGH);
    // long temperature = bmp.readTemperature();
     float pressure = bmp.readPressure();
-    float altitude = bmp.readAltitude(1031.25);
+    float altitude;
+    if(n<10){
+      total_pressure = total_pressure + pressure;
+      n = n + 1;
+      altitude = 0;
+    }
+    if(n==10){
+      alt_pressure = total_pressure/10;
+      n = n + 1;
+      altitude = 0;
+    }
+    if(n>10){
+      altitude = bmp.readAltitude(alt_pressure);
+    }
+
     /*// Serial.print(F("Temperature = "));
     // Serial.print(temperature);/* Adjusted to local forecast! */
     /*// Serial.println(" *C");
@@ -320,7 +339,7 @@ void loop(){
     Data.print(",");
     Data.print(bmp.readPressure());
     Data.print(",");
-    Data.print(bmp.readAltitude(1013.25));
+    Data.print(altitude);
     Data.print(",");
 
     //close the file
@@ -334,9 +353,8 @@ void loop(){
       //// Serial.print(F("Writing to AccelDat.txt..."));
 
 
-    //Condition makes sure we are at least within 2000m of altitude and the acceleration is either close to 0, 9.8 or -9.8. need to calibrate the accelerameter to see which one occurs
-   // if(/*altitude > 7000 && */ ((accel_total > -1 && accel_total < 1) || (accel_total < 10.8 && accel_total > 8.8) || (accel_total > -10.8 && accel_total < -8.8))){ 
-    if((accel_total > -1) && (accel_total < 1)){
+    //Condition makes sure we are at least within 2000m of altitude and the acceleration is either close to 0, 9.8 or -9.8. need to calibrate the accelerameter to see which one occurs 
+    if(((accel_total > -1) && (accel_total < 1)) && (altitude > 1000)){
       digitalWrite(solenoidPin,HIGH);
       Data.print(1);
       Data.println();
