@@ -265,7 +265,7 @@ void loop(){
   */
   if (accel_total > 15) {
     launch = true;
-    //digitalWrite(ledPin, HIGH);
+    digitalWrite(ledPin, HIGH);
   }
   
 
@@ -316,7 +316,8 @@ void loop(){
     }
     if(n>10){
       altitude = bmp.readAltitude(alt_pressure/100);
-      launch = true;
+      //launch = true;
+      //digitalWrite(ledPin, HIGH);
     }
 
     /*// Serial.print(F("Temperature = "));
@@ -356,7 +357,7 @@ void loop(){
 
 
     //Condition makes sure we are at least within 2000m of altitude and the acceleration is either close to 0, 9.8 or -9.8. need to calibrate the accelerameter to see which one occurs 
-    if((((accel_total > -1) && (accel_total < 1)) && (altitude > 500)) || temperature > 35){
+    if(((accel_total > -1) && (accel_total < 1)) && (altitude > 500)){
       digitalWrite(solenoidPin,HIGH);
       Data.print(1);
       Data.println();
@@ -379,10 +380,10 @@ void loop(){
 
 void pictures(DateTime x) {
   //turn light on
-  digitalWrite(ledPin, HIGH);
+  //digitalWrite(ledPin, HIGH);
   //Serial.println("Led on");
 
-  //camera function
+  // camera function
   myCAM.flush_fifo();
   myCAM.clear_fifo_flag();
 #if defined (OV2640_MINI_2MP_PLUS)
@@ -404,9 +405,8 @@ void pictures(DateTime x) {
   Serial.println(total_time, DEC);
   //Clear the capture done flag
   myCAM.clear_fifo_flag();
+  delay(1200);
 }
-
-//Camera function necessary for ^^ to run
 uint8_t read_fifo_burst(ArduCAM myCAM)
 {
   uint8_t temp = 0, temp_last = 0;
@@ -421,7 +421,7 @@ uint8_t read_fifo_burst(ArduCAM myCAM)
   Serial.println(length, DEC);
   if (length >= MAX_FIFO_SIZE) //8M
   {
-    //Serial.println("Over size.");
+    Serial.println("Over size.");
     return 0;
   }
   if (length == 0 ) //0 kb
@@ -491,7 +491,7 @@ uint8_t read_fifo_burst(ArduCAM myCAM)
   myCAM.CS_HIGH();
 
   //turn LED off
-  digitalWrite(ledPin, LOW);
+  //digitalWrite(ledPin, LOW);
   //Serial.println("Led off");
 
   
