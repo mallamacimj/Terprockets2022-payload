@@ -82,6 +82,8 @@ RTC_PCF8523 rtc;
 //int n = 0;
 //float accel_cal_total = 0;
 float accel_min = 100;
+float accel_avga[10] = {9.8, 9.8, 9.8, 9.8, 9.8, 9.8, 9.8, 9.8, 9.8, 9.8}; //changed
+float accel_avg = 9.8; //changed
 
 //for calibrating accelerameter
 const int xRawMin = 408, xRawMax = 611;
@@ -90,6 +92,7 @@ const int zRawMin = 425, zRawMax = 629;
 
 //bmp altitude
 int n = 0;
+int nn = 0;
 float total_pressure;
 float alt_pressure;
 
@@ -166,9 +169,9 @@ delay(100);
 
 //temp sensor start
 unsigned status;
- Serial.println("got here 1");
+// Serial.println("got here 1");
 status = bmp.begin();
- Serial.println("got here 2");
+// Serial.println("got here 2");
  /* if (!status) {
     // Serial.println(F("Could not find a valid BMP280 sensor, check wiring or "
                       "try a different address!"));
@@ -243,6 +246,22 @@ void loop(){
   float accel_z = zScaled / 1000.0 * 9.8;
   float accel_total = sqrt((accel_x * accel_x) + (accel_y * accel_y) + (accel_z * accel_z));
 
+  if(launch == false){      //change start
+    if(nn<9){
+      accel_avga[nn] = accel_total;
+      nn = nn + 1;
+    }
+    if(nn==9){
+      accel_avga[nn] = accel_total;
+      nn = 0;
+    }
+    float accel_avgt = 0;
+    for(int iii = 0; iii<10; iii++){
+      accel_avgt = accel_avgt + accel_avga[iii];
+    }
+    accel_avg = accel_avgt/10;
+  } // change end
+  
   /*// Serial.println(accel_x);
   // Serial.println(accel_y);
   // Serial.println(accel_z);
@@ -357,7 +376,7 @@ void loop(){
 
 
     //Condition makes sure we are at least within 2000m of altitude and the acceleration is either close to 0, 9.8 or -9.8. need to calibrate the accelerameter to see which one occurs 
-    if(((accel_total > -1) && (accel_total < 1)) && (altitude > 500)){
+    if(((accel_total > (accel_avg - 10.8)) && (accel_total < (accel_avg - 8.8))) && (altitude > 500)){ //changed
       digitalWrite(solenoidPin,HIGH);
       Data.print(1);
       Data.println();
